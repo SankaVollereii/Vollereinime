@@ -1,0 +1,71 @@
+<div
+  class="sticky top-0 left-0 right-0 navbar bg-base-100/90 backdrop-blur shadow-sm z-10 rounded-b-lg"
+>
+  <div class="navbar-start">
+    <div class="dropdown">
+      <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h7"></path>
+        </svg>
+      </div>
+      <ul
+      tabindex="0"
+      class="menu text-base dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+>
+      <li class="menu-title">Navigasi Utama</li>
+      <li><a href="/">Ongoing</a></li>
+      <li><a href="/completed">Completed</a></li>
+      <li><a href="/schedule">Jadwal Anime</a></li>
+      <li><a href="https://sociabuzz.com/sankanime/tribe">Donate Me</a></li>
+      <li><a href="https://sankavollerei.com">Project Sanka</a></li>
+    </ul>
+    </div>
+  </div>
+  <div class="navbar-center">
+    <a href="/" class="btn btn-ghost text-xl">Project Sanka</a>
+  </div>
+ <div class="navbar-end">
+  <div class="dropdown dropdown-end">
+    <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        ></path>
+      </svg>
+    </div>
+    <div
+      tabindex="0"
+      class="dropdown-content z-[1] card card-compact w-64 p-2 shadow bg-base-100"
+    >
+      <form action="/search" method="get" class="flex flex-col gap-2">
+        <input
+          type="text"
+          name="q"
+          placeholder="Cari anime..."
+          class="input input-bordered w-full"
+        />
+        <button type="submit" class="btn btn-primary w-full">Cari</button>
+      </form>
+    </div>
+  </div>
+</div>
+

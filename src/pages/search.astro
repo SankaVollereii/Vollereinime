@@ -1,0 +1,146 @@
+---
+import Layout from '../layouts/Layout.astro';
+// import { fetchSearchData } from './src/utils/api.js'; 
+// Pastikan Anda masih mengimpor fetchSearchData
+import { fetchSearchData } from '~/utils/api.js';
+
+const searchQuery = Astro.url.searchParams.get('q');
+
+let searchResults = [];
+let recommendedAnime = []; // Variabel baru untuk rekomendasi
+
+// Daftar anime dummy untuk rekomendasi.
+// IDEALNYA: Daftar ini harus diambil dari database atau API
+// yang berisi anime populer/terbaik atau yang direkomendasikan secara khusus.
+// Untuk tujuan demo, ini adalah contoh.
+const knownAnimeTitles = [
+  { id: '1', slug: 'naruto-shippuden', title: 'Naruto Shippuden', image: 'https://cdn.myanimelist.net/images/anime/1565/111302l.webp', rating: '8.19', status: 'Completed' },
+  { id: '2', slug: 'one-piece', title: 'One Piece', image: 'https://cdn.myanimelist.net/images/anime/6/73245l.webp', rating: '8.71', status: 'Ongoing' },
+  { id: '3', slug: 'attack-on-titan', title: 'Attack on Titan', image: 'https://cdn.myanimelist.net/images/anime/10/47459l.webp', rating: '9.10', status: 'Completed' },
+  { id: '4', slug: 'jujutsu-kaisen', title: 'Jujutsu Kaisen', image: 'https://cdn.myanimelist.net/images/anime/1171/109222l.webp', rating: '8.73', status: 'Completed' },
+  { id: '5', slug: 'demon-slayer', title: 'Demon Slayer', image: 'https://cdn.myanimelist.net/images/anime/1120/129712l.webp', rating: '8.50', status: 'Completed' },
+  { id: '6', slug: 'my-hero-academia', title: 'My Hero Academia', image: 'https://cdn.myanimelist.net/images/anime/1248/120616l.webp', rating: '8.00', status: 'Ongoing' },
+  { id: '7', slug: 'spy-x-family', title: 'SPY x FAMILY', image: 'https://cdn.myanimelist.net/images/anime/1441/122795l.webp', rating: '8.65', status: 'Ongoing' },
+  { id: '8', slug: 'chainsaw-man', title: 'Chainsaw Man', image: 'https://cdn.myanimelist.net/images/anime/1807/126284l.webp', rating: '8.30', status: 'Completed' },
+  { id: '9', slug: 'bleach', title: 'Bleach', image: 'https://cdn.myanimelist.net/images/anime/1628/125867l.webp', rating: '8.70', status: 'Ongoing' },
+  { id: '10', slug: 'death-note', title: 'Death Note', image: 'https://cdn.myanimelist.net/images/anime/1240/124119l.webp', rating: '8.60', status: 'Completed' },
+  { id: '11', slug: 're-zero', title: 'Re:Zero kara Hajimeru Isekai Seikatsu', image: 'https://cdn.myanimelist.net/images/anime/1096/110904l.webp', rating: '8.20', status: 'Completed' },
+  { id: '12', slug: 'sword-art-online', title: 'Sword Art Online', image: 'https://cdn.myanimelist.net/images/anime/1684/104396l.webp', rating: '7.50', status: 'Completed' },
+  { id: '13', slug: 'fairy-tail', title: 'Fairy Tail', image: 'https://cdn.myanimelist.net/images/anime/1077/102377l.webp', rating: '7.80', status: 'Completed' },
+  { id: '14', slug: 'fullmetal-alchemist-brotherhood', title: 'Fullmetal Alchemist: Brotherhood', image: 'https://cdn.myanimelist.net/images/anime/1208/136066l.webp', rating: '9.20', status: 'Completed' },
+  { id: '15', slug: 'dr-stone', title: 'Dr. Stone', image: 'https://cdn.myanimelist.net/images/anime/1483/102704l.webp', rating: '8.00', status: 'Ongoing' },
+  { id: '16', slug: 'tokyo-ghoul', title: 'Tokyo Ghoul', image: 'https://cdn.myanimelist.net/images/anime/5/64429l.webp', rating: '7.70', status: 'Completed' },
+  { id: '17', slug: 'hunter-x-hunter', title: 'Hunter x Hunter (2011)', image: 'https://cdn.myanimelist.net/images/anime/1337/99013l.webp', rating: '9.00', status: 'Completed' },
+  { id: '18', slug: 'konosuba', title: 'Kono Subarashii Sekai ni Shukufuku wo!', image: 'https://cdn.myanimelist.net/images/anime/1376/111002l.webp', rating: '8.30', status: 'Completed' },
+  { id: '19', slug: 'overlord', title: 'Overlord', image: 'https://cdn.myanimelist.net/images/anime/10/76840l.webp', rating: '7.90', status: 'Ongoing' },
+  { id: '20', slug: 'bocchi-the-rock', title: 'Bocchi the Rock!', image: 'https://cdn.myanimelist.net/images/anime/1053/127914l.webp', rating: '8.50', status: 'Completed' },
+];
+
+if (searchQuery) {
+  try {
+    const data = await fetchSearchData(searchQuery);
+    searchResults = data?.results || [];
+  } catch (error) {
+    console.error("Failed to fetch search results:", error);
+    searchResults = [];
+  }
+
+  // Jika tidak ada hasil pencarian, ambil beberapa rekomendasi acak
+  if (searchResults.length === 0) {
+    // Acak daftar knownAnimeTitles dan ambil beberapa
+    recommendedAnime = knownAnimeTitles
+      .sort(() => 0.5 - Math.random()) // Acak array
+      .slice(0, 8); // Ambil 8 rekomendasi teratas (bisa disesuaikan)
+  }
+}
+---
+
+<Layout title={`Hasil Pencarian: ${searchQuery || ''}`} description={`Menampilkan hasil pencarian untuk ${searchQuery || ''}`}>
+  <div class="container mx-auto px-4 py-4 md:py-8">
+    <h1 class="text-xl sm:text-2xl md:text-3xl font-bold mb-6">Hasil Pencarian untuk: "{searchQuery || 'Tidak ada query'}"</h1>
+
+    {searchQuery ? (
+      searchResults.length > 0 ? (
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {searchResults.map((anime) => (
+            <div class="
+              card bg-base-200 shadow-xl group overflow-hidden relative
+              w-11/12 mx-auto sm:w-auto sm:mx-0
+            ">
+              {/* FIGURE: Mengatur rasio aspek gambar */}
+              <figure class="relative w-full pb-[100%] sm:pb-[120%] md:pb-[140%] overflow-hidden">
+                <img
+                  src={anime.image || 'https://via.placeholder.com/250x350?text=No+Image'}
+                  alt={anime.title || 'Anime Image'}
+                  class="absolute inset-0 w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-105"
+                />
+              </figure>
+
+              {/* OVERLAY: Untuk teks agar lebih terbaca di atas gambar */}
+              <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex flex-col justify-end p-4 text-white">
+                <h2 class="font-bold text-lg md:text-xl leading-tight mb-1">
+                  {anime.title}
+                </h2>
+                {anime.rating && <p class="text-xs sm:text-sm opacity-90">Rating: {anime.rating}</p>}
+                {anime.status && <p class="text-xs sm:text-sm opacity-90">Status: {anime.status}</p>}
+                <div class="card-actions justify-end mt-4">
+                  <a href={`/watch/${anime.id}/${anime.slug}`} class="btn btn-primary btn-sm">Lihat</a>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="text-center mt-8">
+          <p class="text-lg text-warning mb-4">
+            Tidak ada hasil ditemukan untuk "{searchQuery}".
+          </p>
+          
+          {/* Bagian Rekomendasi Anime */}
+          {recommendedAnime.length > 0 && (
+            <div class="mt-8"> {/* Tambahkan margin atas untuk pemisah */}
+              <h2 class="text-2xl font-bold mb-6 text-base-content">Anime Rekomendasi Untukmu:</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {recommendedAnime.map((anime) => (
+                  <div class="
+                    card bg-base-200 shadow-xl group overflow-hidden relative
+                    w-11/12 mx-auto sm:w-auto sm:mx-0
+                  ">
+                    {/* FIGURE: Mengatur rasio aspek gambar */}
+                    <figure class="relative w-full pb-[100%] sm:pb-[120%] md:pb-[140%] overflow-hidden">
+                      <img
+                        src={anime.image || 'https://via.placeholder.com/250x350?text=No+Image'}
+                        alt={anime.title || 'Anime Image'}
+                        class="absolute inset-0 w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </figure>
+
+                    {/* OVERLAY: Untuk teks agar lebih terbaca di atas gambar */}
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex flex-col justify-end p-4 text-white">
+                      <h2 class="font-bold text-lg md:text-xl leading-tight mb-1">
+                        {anime.title}
+                      </h2>
+                      {anime.rating && <p class="text-xs sm:text-sm opacity-90">Rating: {anime.rating}</p>}
+                      {anime.status && <p class="text-xs sm:text-sm opacity-90">Status: {anime.status}</p>}
+                      <div class="card-actions justify-end mt-4">
+                        <a href={`/watch/${anime.id}/${anime.slug}`} class="btn btn-primary btn-sm">Lihat</a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    ) : (
+      <p class="text-center text-lg mt-8">
+        Masukkan kata kunci di kolom pencarian untuk mencari anime.
+      </p>
+    )}
+
+    <div class="mt-10 text-center">
+      <a href="/" class="btn btn-link">Kembali ke Halaman Utama</a>
+    </div>
+  </div>
+</Layout>

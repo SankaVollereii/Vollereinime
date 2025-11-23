@@ -1,0 +1,121 @@
+---
+import Layout from '~/layouts/Layout.astro';
+import { fetchScheduleData } from '~/utils/api.js';
+
+const daysMap = {
+  monday: "Senin",
+  tuesday: "Selasa",
+  wednesday: "Rabu",
+  thursday: "Kamis",
+  friday: "Jumat",
+  saturday: "Sabtu",
+  sunday: "Minggu",
+  random: "Random"
+};
+
+let groupedSchedule = {};
+let sortedDays = [];
+let hasData = false;
+
+try {
+  const promises = Object.keys(daysMap).map(async (apiDay) => {
+    const res = await fetchScheduleData(apiDay);
+    const animeList = res?.results || res?.data || [];
+    
+    return {
+      dayName: daysMap[apiDay], 
+      list: Array.isArray(animeList) ? animeList : []
+    };
+  });
+
+  const dailyResults = await Promise.all(promises);
+
+  dailyResults.forEach(({ dayName, list }) => {
+    if (list.length > 0) {
+      groupedSchedule[dayName] = list.map(anime => ({
+        anime_name: anime.title,
+        displayImage: anime.poster || anime.image || 'https://via.placeholder.com/250x350?text=No+Image',
+        watchPageId: anime.id,
+        watchPageSlug: anime.slug,
+        displayInfo: anime.score, // Isinya "Selanjutnya: Ep 8"
+        scheduleTime: anime.schedule?.time || '' // Isinya "00:20 WIB"
+      }));
+      hasData = true;
+    }
+  });
+
+  const daysOrder = Object.values(daysMap);
+  sortedDays = Object.keys(groupedSchedule).sort((a, b) => {
+    return daysOrder.indexOf(a) - daysOrder.indexOf(b);
+  });
+
+} catch (error) {
+  console.error("Gagal mengambil jadwal anime:", error);
+}
+---
+
+<Layout title="Jadwal Anime" description="Jadwal rilis anime terbaru">
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-center">Jadwal Anime</h1>
+
+    {hasData ? (
+      sortedDays.map(day => (
+        <div class="mb-10">
+          <div class="flex items-center gap-4 mb-6">
+             <h2 class="text-2xl font-bold text-primary uppercase tracking-wide">{day}</h2>
+             <div class="h-px bg-base-content/10 flex-grow"></div>
+          </div>
+          
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+            {groupedSchedule[day].map(anime => (
+              <div class="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow duration-300 group overflow-hidden relative rounded-lg">
+                <figure class="relative w-full pb-[140%] overflow-hidden">
+                    <img
+                        src={anime.displayImage}
+                        alt={anime.anime_name || 'Anime Image'}
+                        class="absolute inset-0 w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
+                        loading="lazy"
+                    />
+                    {anime.scheduleTime && (
+                        <div class="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
+                            {anime.scheduleTime}
+                        </div>
+                    )}
+                </figure>
+                
+                <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent flex flex-col justify-end p-3 text-white">
+                    <h3 class="font-bold text-sm sm:text-base leading-snug mb-1 line-clamp-2 group-hover:text-primary transition-colors">
+                        {anime.anime_name}
+                    </h3>
+                  
+                    {anime.displayInfo && (
+                        <div class="text-xs text-gray-300 mb-3 line-clamp-1">
+                            {anime.displayInfo}
+                        </div>
+                    )}
+
+                    <div class="card-actions mt-auto">
+                        {anime.watchPageId && anime.watchPageSlug ? (
+                            <a href={`/watch/${anime.watchPageId}/${anime.watchPageSlug}`} class="btn btn-primary btn-sm w-full border-none bg-primary/90 hover:bg-primary">
+                                Tonton
+                            </a>
+                        ) : (
+                            <button class="btn btn-disabled btn-sm w-full bg-white/10 text-white/50">Belum Tersedia</button>
+                        )}
+                    </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))
+    ) : (
+      <div class="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+        <div class="loading loading-spinner loading-lg text-primary"></div>
+        <p class="text-center text-lg opacity-70">
+            Sedang memuat jadwal anime...
+        </p>
+      </div>
+    )}
+  </div>
+</Layout>
