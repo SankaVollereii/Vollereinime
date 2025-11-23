@@ -59,7 +59,7 @@ export async function fetchScheduleData(day = 'all', page = 1) {
 export async function fetchData(endpoint, page = null) {
   try {
     let finalEndpoint = endpoint;
-    const quickEndpoints = ['ongoing', 'finished', 'movie', 'donghua'];
+    const quickEndpoints = ['ongoing', 'finished', 'movie', 'donghua', 'completed'];
     if (quickEndpoints.includes(endpoint)) {
       finalEndpoint = `quick/${endpoint}`;
     }
