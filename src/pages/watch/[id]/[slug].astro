@@ -180,14 +180,58 @@ try {
       </div>
     </div>
   </div>
+  <div 
+    id="anime-metadata" 
+    class="hidden"
+    data-id={id}
+    data-slug={slug}
+    data-title={data.results.title}
+    data-image={data.results.image}
+    data-episode={currentEpisodeNumber}
+    data-type={contentType}
+  ></div>
 </Layout>
 <script>
   import { initWatchPlayer } from "/src/scripts/watch.js";
+  function saveHistory() {
+    const meta = document.getElementById("anime-metadata");
+    if (!meta) return;
+    const animeData = {
+      id: meta.dataset.id,
+      slug: meta.dataset.slug,
+      title: meta.dataset.title,
+      image: meta.dataset.image,
+      episode: "Episode " + meta.dataset.episode,
+      type: meta.dataset.type,
+      timestamp: new Date().getTime(), 
+      link: window.location.pathname + window.location.search
+    };
+
+    const HISTORY_KEY = "anime_history";
+    const MAX_HISTORY = 50;
+
+    try {
+      let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+      history = history.filter((item) => item.id !== animeData.id);
+      history.unshift(animeData);
+      
+      if (history.length > MAX_HISTORY) {
+        history = history.slice(0, MAX_HISTORY);
+      }
+
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {
+      console.error("Gagal menyimpan history", e);
+    }
+  }
+
   document.addEventListener("astro:after-swap", () => {
     initWatchPlayer();
+    saveHistory(); 
   });
   
   initWatchPlayer();
+  saveHistory();
 
   const episodeListSelect = document.getElementById("episodeListSelect");
   if (episodeListSelect) {
@@ -200,51 +244,4 @@ try {
       }
     });
   }
-<script define:vars={{ 
-    animeId: id, 
-    animeSlug: slug, 
-    animeTitle: data.results.title, 
-    animeImage: data.results.image, 
-    currentEpisode: currentEpisodeNumber,
-    type: contentType 
-}}>
-  function saveToHistory() {
-    const HISTORY_KEY = "anime_history";
-    const MAX_HISTORY = 50;
-
-    try {
-      let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-
-      const newItem = {
-        id: animeId,
-        slug: animeSlug,
-        title: animeTitle,
-        image: animeImage,
-        episode: "Episode " + currentEpisode,
-        type: type,
-        timestamp: newjw Date().getTime(),
-        link: `/watch/${animeId}/${animeSlug}?episode=${currentEpisode}`
-      };
-
-      history = history.filter(item => item.id !== animeId);
-      history.unshift(newItem);
-
-      if (history.length > MAX_HISTORY) {
-        history = history.slice(0, MAX_HISTORY);
-      }
-
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-      
-    } catch (error) {
-      console.error("Gagal menyimpan history:", error);
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', saveToHistory);
-  } else {
-    saveToHistory();
-  }
-  
-  document.addEventListener('astro:after-swap', saveToHistory);
 </script>
