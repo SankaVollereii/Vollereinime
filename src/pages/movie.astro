@@ -1,0 +1,62 @@
+---
+export const prerender = false;
+import Layout from "~/layouts/Layout.astro";
+import Card from "~/components/ui/Card.astro";
+import { fetchData } from "~/utils/api";
+const data = await fetchData("movie");
+---
+
+<Layout title="Anime Movie - Vollereinime">
+  <h1 class="text-2xl font-bold mb-4 px-2 mt-4 border-l-4 border-secondary pl-3">Anime Movie</h1>
+
+  <div id="content" class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+    <Card data={data?.animes || data?.results || []} />
+    
+    <div
+      id="loading"
+      class="skeleton aspect-[3/4] max-h-96 flex items-center justify-center rounded bg-base-200"
+    >
+      <span class="loading loading-spinner loading-lg text-secondary"></span>
+    </div>
+  </div>
+
+  <template id="card-template">
+    <div class="card aspect-[3/4] group relative select-none shadow rounded max-h-96 overflow-hidden">
+      <figure class="w-full h-full">
+        <img src="" width="240" height="340" alt="" loading="lazy" class="card-image object-cover aspect-[3/4] rounded w-full h-full" />
+      </figure>
+      <div class="w-full absolute bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent group-hover:backdrop-blur-sm transition-[height] max-h-[100%] h-24 md:h-28 group-hover:h-full flex flex-col justify-end items-center rounded p-2">
+        <h3 class="text-sm md:text-base font-bold absolute top-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 line-clamp-3 text-center w-full px-2 text-white"></h3>
+        <h3 class="text-xs md:text-sm font-semibold line-clamp-2 text-center text-white mb-2 group-hover:opacity-0 transition-opacity"></h3>
+
+        <div class="flex flex-col gap-2 items-center w-full pb-2">
+          <a href="" class="hidden group-hover:flex btn btn-secondary btn-sm w-3/4 shadow-lg border-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="size-4">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Tonton
+          </a>
+          <p class="text-center text-[10px] font-bold text-gray-300 tracking-wide uppercase"></p>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    import { initInfiniteScroll } from "/src/scripts/infinite-scroll.js";
+    function setupInfiniteScroll() {
+      if (window.__infiniteScrollObserver) {
+        window.__infiniteScrollObserver.disconnect();
+      }
+      initInfiniteScroll("movie");
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setupInfiniteScroll);
+    } else {
+      setupInfiniteScroll();
+    }
+
+    document.addEventListener("astro:after-swap", setupInfiniteScroll);
+  </script>
+</Layout>
