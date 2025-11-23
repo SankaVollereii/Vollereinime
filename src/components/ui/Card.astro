@@ -2,22 +2,22 @@
 interface Data {
   title: string;
   url: string;
-  pages: string;
   img: string;
-  image?: string; 
+  image?: string;
   poster?: string; 
-  tipe: string;
-  episode: string;
-  status?: string; 
-  type?: string; 
-  id?: string; 
-  slug?: string; 
+  episode?: string;
+  type?: string;
+  status?: string;
+  quality?: string; 
+  score?: string;
+  id?: string;
+  slug?: string;
 }
 
 interface Props {
   data: Data[] | null;
-  loadingNumber: number;
-  search: boolean;
+  loadingNumber?: number; 
+  search?: boolean;
 }
 
 const { data, search } = Astro.props;
@@ -26,18 +26,20 @@ const { data, search } = Astro.props;
 {
   data &&
     data.map((item, index) => {
-      let rawImg = item.image || item.poster || item.img || "";
+      // 1. Prioritaskan poster (format baru), lalu image, lalu img
+      const rawImg = item.poster || item.image || item.img || "";
       
+      // 2. Handle gambar dari wp.com (optimasi)
       const imgSrc = rawImg.includes("wp.com")
         ? `${rawImg}?quality=50&w=240`
-        : rawImg || null;
+        : rawImg;
 
       const title = item.title;
-      const episode = item.episode
+      const episodeParam = item.episode
         ? `?episode=${item.episode.split(" ")[1]?.split("/")[0]}`
         : "";
 
-      const linkTo = `/watch/${item.id}/${item.slug}${episode}`;
+      const linkTo = `/watch/${item.id}/${item.slug}${episodeParam}`;
 
       return (
         <div
@@ -53,10 +55,16 @@ const { data, search } = Astro.props;
               loading="lazy"
               class="card-image object-cover aspect-[3/4] rounded w-full h-full"
             />
+
+            {item.quality && (
+                <div class="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[10px] px-1.5 py-0.5 rounded font-bold border border-white/10">
+                    {item.quality}
+                </div>
+            )}
           </figure>
 
           <div class="w-full absolute bottom-0 bg-base-100/50 group-hover:backdrop-blur-sm transition-[height] max-h-[100%] h-20 md:h-22 group-hover:h-96 flex flex-col justify-center items-center rounded">
-            <h3 class="text-sm md:text-md font-bold absolute top-2 line-clamp-2 group-hover:line-clamp-5 text-center">
+            <h3 class="text-sm md:text-md font-bold absolute top-2 line-clamp-2 group-hover:line-clamp-5 text-center px-1">
               {title}
             </h3>
 
@@ -87,8 +95,8 @@ const { data, search } = Astro.props;
                   </>
                 )}
               </a>
-              <p class="text-center text-xs font-semibold">
-                {item.episode || item.type || item.status}
+              <p class="text-center text-xs font-semibold text-white drop-shadow-md">
+                {item.episode || item.type || item.status || (item.score ? `★ ${item.score}` : "")}
               </p>
             </div>
           </div>
