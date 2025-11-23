@@ -2,19 +2,19 @@
 import Layout from '~/layouts/Layout.astro';
 import { fetchScheduleData } from '~/utils/api.js';
 
-const currentDay = Astro.url.searchParams.get('day') || 'all';
+const currentDay = Astro.url.searchParams.get('day') || 'senin';
 const currentPage = Number(Astro.url.searchParams.get('page')) || 1;
 
 const daysMap = [
-  { id: 'all', label: 'Semua' },
-  { id: 'monday', label: 'Senin' },
-  { id: 'tuesday', label: 'Selasa' },
-  { id: 'wednesday', label: 'Rabu' },
-  { id: 'thursday', label: 'Kamis' },
-  { id: 'friday', label: 'Jumat' },
-  { id: 'saturday', label: 'Sabtu' },
-  { id: 'sunday', label: 'Minggu' },
+  { id: 'senin', label: 'Senin' },
+  { id: 'selasa', label: 'Selasa' },
+  { id: 'rabu', label: 'Rabu' },
+  { id: 'kamis', label: 'Kamis' },
+  { id: 'jumat', label: 'Jumat' },
+  { id: 'sabtu', label: 'Sabtu' },
+  { id: 'minggu', label: 'Minggu' },
   { id: 'random', label: 'Random' },
+  { id: 'all', label: 'Semua' },
 ];
 
 let animeList = [];
@@ -27,18 +27,15 @@ try {
   pagination = res?.pagination || {};
 } catch (error) {
   console.error("Gagal mengambil data:", error);
-  errorMsg = "Terjadi kesalahan saat mengambil data jadwal.";
+  errorMsg = "Gagal memuat jadwal. Silakan coba lagi.";
 }
 
 function getPageLink(page) {
-  const params = new URLSearchParams();
-  params.set('day', currentDay);
-  params.set('page', page);
-  return `?${params.toString()}`;
+  return `?day=${currentDay}&page=${page}`;
 }
 ---
 
-<Layout title="Jadwal Anime" description="Jadwal rilis anime terbaru dan terlengkap">
+<Layout title="Jadwal Anime" description="Jadwal rilis anime terbaru">
   <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-6 text-center">Jadwal Anime</h1>
 
@@ -53,11 +50,13 @@ function getPageLink(page) {
       ))}
     </div>
 
-    {errorMsg ? (
-        <div class="alert alert-error shadow-lg max-w-md mx-auto">
-            <span>{errorMsg}</span>
-        </div>
-    ) : animeList.length > 0 ? (
+    {errorMsg && (
+      <div class="alert alert-error shadow-lg mb-8">
+        <span>{errorMsg}</span>
+      </div>
+    )}
+
+    {animeList.length > 0 ? (
       <>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
           {animeList.map((anime) => (
@@ -70,12 +69,12 @@ function getPageLink(page) {
                   loading="lazy"
                 />
                 
-                {anime.schedule?.time && anime.schedule.time !== '?' && (
+                {anime.schedule?.time && (
                   <div class="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded shadow-sm border border-white/10">
                     {anime.schedule.time}
                   </div>
                 )}
-                
+
                 {anime.quality && (
                    <div class="absolute top-2 right-2 bg-primary/80 backdrop-blur-sm text-primary-content text-[10px] font-bold px-1.5 py-0.5 rounded">
                     {anime.quality}
@@ -93,44 +92,51 @@ function getPageLink(page) {
                 </div>
 
                 <div class="card-actions mt-auto">
-                  <a 
-                    href={`/watch/${anime.id}/${anime.slug}`} 
-                    class="btn btn-primary btn-xs w-full border-none bg-primary/90 hover:bg-primary shadow-md"
-                  >
-                    Tonton
-                  </a>
+                  {anime.id && anime.slug ? (
+                      <a 
+                        href={`/watch/${anime.id}/${anime.slug}`} 
+                        class="btn btn-primary btn-xs w-full border-none bg-primary/90 hover:bg-primary shadow-md"
+                      >
+                        Lihat Detail
+                      </a>
+                  ) : (
+                      <button class="btn btn-disabled btn-xs w-full">Info Tidak Ada</button>
+                  )}
                 </div>
               </div>
             </div>
           ))}
         </div>
-        <div class="flex justify-center gap-2 mt-8">
-          <a 
-            href={pagination.hasPrev ? getPageLink(currentPage - 1) : '#'} 
-            class={`btn btn-sm ${!pagination.hasPrev ? 'btn-disabled opacity-50' : 'btn-outline'}`}
-          >
-            « Prev
-          </a>
-          
-          <button class="btn btn-sm btn-active no-animation cursor-default">
-            Halaman {currentPage}
-          </button>
-          
-          <a 
-            href={pagination.hasNext ? getPageLink(currentPage + 1) : '#'} 
-            class={`btn btn-sm ${!pagination.hasNext ? 'btn-disabled opacity-50' : 'btn-outline'}`}
-          >
-            Next »
-          </a>
-        </div>
+
+        {(pagination.hasNext || pagination.hasPrev) && (
+            <div class="flex justify-center items-center gap-4 mt-10">
+            <a 
+                href={pagination.hasPrev ? getPageLink(currentPage - 1) : '#'} 
+                class={`btn btn-sm ${!pagination.hasPrev ? 'btn-disabled opacity-50' : 'btn-outline'}`}
+            >
+                « Prev
+            </a>
+            
+            <span class="font-bold text-base-content">
+                Halaman {currentPage}
+            </span>
+            
+            <a 
+                href={pagination.hasNext ? getPageLink(currentPage + 1) : '#'} 
+                class={`btn btn-sm ${!pagination.hasNext ? 'btn-disabled opacity-50' : 'btn-outline'}`}
+            >
+                Next »
+            </a>
+            </div>
+        )}
       </>
     ) : (
-      <div class="flex flex-col items-center justify-center min-h-[40vh] opacity-70">
+      <div class="flex flex-col items-center justify-center min-h-[40vh] opacity-70 text-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <p class="text-lg font-semibold">Tidak ada jadwal anime ditemukan.</p>
-        <p class="text-sm">Coba pilih hari lain.</p>
+        <p class="text-lg font-semibold">Tidak ada jadwal anime ditemukan untuk hari ini.</p>
+        <p class="text-sm mt-2">Coba pilih hari lain atau cek koneksi.</p>
       </div>
     )}
   </div>
