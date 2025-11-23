@@ -12,7 +12,7 @@ Api Anime: **[https://www.sankavollerei.com/anime](https://www.sankavollerei.com
 
 ### Vercel
 
-Host your own instance of <a href="https://sankadonghub.vercel.app">sankadonghub</a>  on vercel
+Host your own instance of <a href="https://web-anime-kurama.vercel.app">Vollereinime</a>  on vercel
 
 [![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/SankaVollereii/web-anime-kurama)
 
